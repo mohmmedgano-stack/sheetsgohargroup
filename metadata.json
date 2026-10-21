@@ -1,0 +1,6 @@
+{
+  "name": "جوهر جروب - نظام الشيتات وإدارة العملاء",
+  "description": "منصة إدارة العملاء والشيتات التفاعلية والتتبع اليومي لمجموعة جوهر للتطوير العقاري",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

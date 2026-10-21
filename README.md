@@ -1,11 +1,7 @@
-<div align="center">
+# Gohar Group CRM (sheetsgohargroup.com)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+React + Vite + Tailwind (RTL Arabic) front end, Express server (`server.ts` -> `dist/server.cjs`), MySQL `app_state` table.
 
-  <h1>Built with AI Studio</h2>
-
-  <p>The fastest path from prompt to production with Gemini.</p>
-
-  <a href="https://aistudio.google.com/apps">Start building</a>
-
-</div>
+- `npm install && npm run build` then `node dist/server.cjs` (port 3000)
+- Copy `.env.example` to `.env` and fill it in. **Never commit `.env`.**
+- Admin backup: open `/api/admin/backup` while logged in as the general manager.

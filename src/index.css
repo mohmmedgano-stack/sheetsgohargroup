@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    background-color: #0B0F15;
+    color: #f1f5f9;
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.01em;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+  }
+
+  html.light, html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  /* Prevent 300ms mobile tap delay and double-tap zoom on interactive elements */
+  button, a, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+/* ============================================================
+   iOS-style design system (reusable across the app)
+   Frosted glass, SF font stack, native iOS blue, soft rounded corners
+   ============================================================ */
+:root {
+  /* Dark mode (app default) */
+  --ios-blue: #4F9282;
+  --ios-blue-active: #7AB0A0;
+  --ios-bg: #0E211C;
+  --ios-card: #16302A;
+  --brand-gold: #C49A45;
+  --brand-cream: #E8DCC4;
+  --brand-dark-green: #123F36;
+  --brand-green: #2A6B5C;
+  --ios-separator: #244840;
+  --ios-label-secondary: #9AB5AC;
+  --ios-red: #F87171;
+  --ios-green: #34D399;
+  --ios-text: #F2F7F5;
+}
+
+html.light {
+  /* Light mode */
+  --ios-blue: #2A6B5C;
+  --ios-blue-active: #123F36;
+  --ios-bg: #FAF8F3;
+  --ios-card: #FFFFFF;
+  --ios-separator: #E4E7EC;
+  --ios-label-secondary: #667085;
+  --ios-red: #F04438;
+  --ios-green: #12B76A;
+  --ios-text: #000000;
+}
+
+.ios-font {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.ios-page {
+  background-color: var(--ios-bg);
+  color: var(--ios-text);
+  min-height: 100vh;
+}
+
+.ios-card {
+  background: color-mix(in srgb, var(--ios-card) 85%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 20px;
+  border: 1px solid var(--ios-separator);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
+  color: var(--ios-text);
+}
+
+.ios-list {
+  background: var(--ios-card);
+  border-radius: 14px;
+  overflow: hidden;
+  color: var(--ios-text);
+}
+
+.ios-list-item {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 0.5px solid var(--ios-separator);
+  font-size: 16px;
+  transition: background-color 0.15s ease;
+}
+
+.ios-list-item:last-child {
+  border-bottom: none;
+}
+
+.ios-list-item:active {
+  background-color: var(--ios-separator);
+}
+
+.ios-value {
+  color: var(--ios-label-secondary);
+}
+
+.ios-input {
+  background: color-mix(in srgb, var(--ios-label-secondary) 12%, transparent);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--ios-text);
+  width: 100%;
+  transition: box-shadow 0.15s ease;
+}
+
+.ios-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ios-blue);
+}
+
+.ios-button {
+  display: block;
+  width: 100%;
+  background-color: var(--ios-blue);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.ios-button:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+.ios-button-secondary {
+  background-color: rgba(0, 122, 255, 0.12);
+  color: var(--ios-blue);
+}
+
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FFF099 0%, #D4AF37 50%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-gradient-text {
+  background: linear-gradient(135deg, #6EE7B7 0%, #10B981 50%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Safe area padding utilities for modern edge-to-edge mobile screens */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 16px);
+}
+
+/* Mobile-friendly momentum scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* High-performance mobile card rendering: skip offscreen paint/layout for instantaneous rendering */
+.mobile-card-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 170px;
+}
+
+/* GPU hardware acceleration for smooth 60fps mobile transitions */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Hide scrollbar utility for clean horizontal swipe pills on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom modern scrollbars for desktop */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #08140F;
+  }
+
+  html.light ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1B4332;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 9999px;
+  }
+
+  html.light ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border: 1px solid #94a3b8;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D4AF37;
+  }
+
+  html.light ::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+  }
+}
+
+/* Smooth Table & Interactive Animations */
+@keyframes pulseSubtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+/* Glass & Glow utilities */
+.glass-panel-dark {
+  background: rgba(11, 23, 18, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* Respect prefers-reduced-motion for low-power mobile CPU/GPU and accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+
+/* ============================================================
+   Mobile & tablet layer (< 1024px): fits every phone size
+   ============================================================ */
+@media (max-width: 1023px) {
+  /* only <html> clips sideways; a second scroll container on <body> breaks touch scrolling */
+  html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  /* iOS Safari zooms in on any field under 16px - keep everything at 16px */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Bigger, easier touch targets */
+  button, a[href], select {
+    min-height: 36px;
+  }
+
+  /* Pop-ups/modals never taller than the visible screen (incl. mobile browser bars) */
+  [role="dialog"], .fixed.inset-0 > div {
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Wide tables scroll inside themselves instead of breaking the page */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Leave room above the bottom navigation, including the iPhone home bar */
+  main {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* Very small phones (iPhone SE, small Androids) */
+@media (max-width: 374px) {
+  html { font-size: 15px; }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

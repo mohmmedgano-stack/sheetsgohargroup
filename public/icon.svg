@@ -1,0 +1,12 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="100" fill="#072619"/>
+  <polygon points="256,48 440,154 440,358 256,464 72,358 72,154" fill="url(#pwaGoldGrad)" stroke="#FFE899" stroke-width="8"/>
+  <path d="M 350 256 A 94 94 0 1 0 256 350 L 256 280 L 305 280" fill="none" stroke="#072619" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="pwaGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF2B2"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#996E19"/>
+    </linearGradient>
+  </defs>
+</svg>

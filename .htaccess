@@ -1,0 +1,8 @@
+# Gohar Group CRM — Express app served by Phusion Passenger
+PassengerAppRoot "/home/u129859501/domains/sheetsgohargroup.com/public_html"
+PassengerBaseURI "/"
+PassengerNodejs "/opt/alt/alt-nodejs22/root/usr/bin/node"
+PassengerAppType node
+PassengerStartupFile dist/server.cjs
+PassengerAppEnv production
+PassengerFriendlyErrorPages on

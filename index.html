@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=yes" />
+    <title>جوهر جروب - نظام الشيتات وإدارة العملاء</title>
+    <meta name="description" content="منصة إدارة العملاء والشيتات التفاعلية والتتبع اليومي لمجموعة جوهر للتطوير العقاري" />
+    <meta property="og:title" content="جوهر جروب - نظام الشيتات وإدارة العملاء" />
+    <meta property="og:description" content="منصة إدارة العملاء والشيتات التفاعلية والتتبع اليومي لمجموعة جوهر للتطوير العقاري" />
+    <meta name="theme-color" content="#f8fafc" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+
+    <!-- Handle & suppress benign Vite HMR websocket disconnect warnings in sandboxed environment -->
+    <script>
+      (function() {
+        if (typeof window === 'undefined') return;
+
+        // Clean mock WebSocket for Vite HMR in container environments where HMR is intentionally disabled
+        var RealWebSocket = window.WebSocket;
+        if (RealWebSocket) {
+          function MockHmrSocket(url, protocols) {
+            this.url = url;
+            this.protocol = Array.isArray(protocols) ? protocols[0] : (protocols || 'vite-hmr');
+            this.readyState = 1; // WebSocket.OPEN
+            this.binaryType = 'blob';
+            this.bufferedAmount = 0;
+            this.extensions = '';
+            this.onopen = null;
+            this.onclose = null;
+            this.onerror = null;
+            this.onmessage = null;
+            this._listeners = {};
+
+            var self = this;
+            setTimeout(function() {
+              var ev = new Event('open');
+              if (typeof self.onopen === 'function') {
+                try { self.onopen(ev); } catch (e) {}
+              }
+              self.dispatchEvent(ev);
+            }, 10);
+          }
+
+          MockHmrSocket.prototype.send = function() {};
+          MockHmrSocket.prototype.close = function(code, reason) {
+            this.readyState = 3; // CLOSED
+            var ev = new CloseEvent('close', { code: code || 1000, reason: reason || 'Normal Closure', wasClean: true });
+            if (typeof this.onclose === 'function') {
+              try { this.onclose(ev); } catch (e) {}
+            }
+            this.dispatchEvent(ev);
+          };
+          MockHmrSocket.prototype.addEventListener = function(type, listener) {
+            if (!this._listeners[type]) this._listeners[type] = [];
+            this._listeners[type].push(listener);
+          };
+          MockHmrSocket.prototype.removeEventListener = function(type, listener) {
+            if (!this._listeners[type]) return;
+            var idx = this._listeners[type].indexOf(listener);
+            if (idx !== -1) this._listeners[type].splice(idx, 1);
+          };
+          MockHmrSocket.prototype.dispatchEvent = function(event) {
+            var listeners = this._listeners[event.type] || [];
+            for (var i = 0; i < listeners.length; i++) {
+              try { listeners[i].call(this, event); } catch (e) {}
+            }
+            return true;
+          };
+
+          MockHmrSocket.CONNECTING = 0;
+          MockHmrSocket.OPEN = 1;
+          MockHmrSocket.CLOSING = 2;
+          MockHmrSocket.CLOSED = 3;
+
+          window.WebSocket = function(url, protocols) {
+            var sUrl = String(url || '');
+            var isViteHmr = false;
+            try {
+              if (
+                protocols === 'vite-hmr' ||
+                (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1) ||
+                sUrl.indexOf('vite-hmr') !== -1 ||
+                sUrl.indexOf('/@vite') !== -1 ||
+                (sUrl.indexOf('localhost:3000') !== -1 && (!protocols || protocols === 'vite-hmr'))
+              ) {
+                isViteHmr = true;
+              }
+            } catch (err) {}
+
+            if (isViteHmr) {
+              return new MockHmrSocket(url, protocols);
+            }
+            return new RealWebSocket(url, protocols);
+          };
+
+          window.WebSocket.prototype = RealWebSocket.prototype;
+          window.WebSocket.CONNECTING = RealWebSocket.CONNECTING;
+          window.WebSocket.OPEN = RealWebSocket.OPEN;
+          window.WebSocket.CLOSING = RealWebSocket.CLOSING;
+          window.WebSocket.CLOSED = RealWebSocket.CLOSED;
+        }
+
+        function isWsError(msg) {
+          if (!msg) return false;
+          var s = typeof msg === 'object' ? (msg.message || msg.stack || JSON.stringify(msg)) : String(msg);
+          return (
+            s.indexOf('WebSocket') !== -1 ||
+            s.indexOf('websocket') !== -1 ||
+            s.indexOf('failed to connect') !== -1 ||
+            s.indexOf('closed without opened') !== -1 ||
+            s.indexOf('vite-hmr') !== -1 ||
+            (s.indexOf('[vite]') !== -1 && s.indexOf('connect') !== -1)
+          );
+        }
+
+        ['error', 'warn', 'log', 'info'].forEach(function(level) {
+          var orig = console[level];
+          if (!orig) return;
+          console[level] = function() {
+            var args = Array.prototype.slice.call(arguments);
+            if (args.some(isWsError)) return;
+            return orig.apply(console, arguments);
+          };
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e && e.reason ? (e.reason.message || e.reason) : '';
+          if (isWsError(reason)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+
+        window.addEventListener('error', function(e) {
+          var msg = e && (e.message || (e.error && e.error.message));
+          if (isWsError(msg)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+      })();
+    </script>
+
+    <!-- DNS prefetch & Preconnect for Google Fonts -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Non-blocking asynchronous font loading with display=swap for instantaneous FCP -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
+      />
+    </noscript>
+
+    <style>
+      /* Critical inlined shell styles for instant paint < 100ms */
+      body {
+        margin: 0;
+        background-color: #f8fafc;
+        font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+        color: #0f172a;
+        overflow-x: clip;
+      }
+      .gohar-preloader {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+        text-align: center;
+        background: radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.15) 0%, #f8fafc 75%);
+      }
+      .gohar-shell-card {
+        max-width: 480px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        border-radius: 24px;
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+      .gohar-shell-logo {
+        width: 68px;
+        height: 68px;
+        margin-bottom: 16px;
+      }
+      .gohar-shell-title {
+        color: #92400e;
+        font-size: 18px;
+        font-weight: 800;
+        margin: 0 0 6px 0;
+      }
+      .gohar-shell-sub {
+        color: #475569;
+        font-size: 12px;
+        margin: 0 0 24px 0;
+      }
+      .gohar-shell-progress {
+        width: 160px;
+        height: 3px;
+        background: rgba(212, 175, 55, 0.2);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+      }
+      .gohar-shell-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 50%;
+        background: linear-gradient(90deg, #d4af37, #fef08a);
+        border-radius: 999px;
+        animation: goharPulse 1.2s infinite ease-in-out;
+      }
+      @keyframes goharPulse {
+        0% { left: -50%; width: 30%; }
+        50% { width: 60%; }
+        100% { left: 100%; width: 30%; }
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-[#D4AF37] selection:text-gray-950">
+    <div id="root">
+      <div class="gohar-preloader" id="gohar-static-shell">
+        <div class="gohar-shell-card">
+          <svg class="gohar-shell-logo" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="120,8 218,64 218,176 120,232 22,176 22,64" fill="url(#shellGoldGrad)" stroke="#FFE899" stroke-width="4" />
+            <path d="M 170 120 A 50 50 0 1 0 120 170 L 120 135 L 145 135" fill="none" stroke="#072619" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+            <defs>
+              <linearGradient id="shellGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFF2B2" />
+                <stop offset="50%" stop-color="#D4AF37" />
+                <stop offset="100%" stop-color="#996E19" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <h1 class="gohar-shell-title">جوهر جروب للتطوير العقاري</h1>
+          <p class="gohar-shell-sub">نظام الشيتات الذكي وإدارة العملاء CRM</p>
+          <div class="gohar-shell-progress">
+            <div class="gohar-shell-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
