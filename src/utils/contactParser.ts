@@ -19,6 +19,7 @@ function clean(text: string): string {
     .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06f0))
     .replace(/[​-‏‪-‮⁦-⁩﻿­]/g, '')
     .replace(/ /g, ' ')
+    .replace(/_\$!<VCard-Separator>!\$_/g, '\n') // WhatsApp joins copied cards with this marker
     .replace(/\r\n?/g, '\n')
     .replace(/\n[ \t]/g, ''); // vCard folded lines
 }
@@ -29,7 +30,7 @@ export function normalizePhone(raw: string): string {
   if (s.startsWith('00')) s = '+' + s.slice(2);
   let digits = s.replace(/\+/g, '');
   if (digits.length < 7 || digits.length > 15) return '';
-  if (/^(\d)\1+$/.test(digits)) return ''; // 0000000…
+  if (/(\d)\1{6,}/.test(digits)) return ''; // 0000000…, 01000000000 and other made-up numbers
   if (s.startsWith('+')) {
     if (digits.startsWith('200') && digits.length === 13) return '0' + digits.slice(3);
     if (digits.startsWith('20') && digits.length === 12) return '0' + digits.slice(2);

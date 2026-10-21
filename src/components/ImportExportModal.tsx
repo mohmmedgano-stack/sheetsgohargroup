@@ -26,6 +26,7 @@ import {
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { autoDetectColumnMapping, formatPhoneNumber } from '../utils/smartExcelMapper';
+import { parseContacts, normalizePhone } from '../utils/contactParser';
 import { WirelessPrinterModal } from './WirelessPrinterModal';
 import { toLocalDateStr } from '../utils/dates';
 
@@ -33,6 +34,8 @@ interface ImportExportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const ALL_PROJECTS = '__ALL_PROJECTS__';
 
 export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, onClose }) => {
   const {
@@ -178,18 +181,32 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
     let rowsToImport: any[] = [];
 
     if (activeTab === 'text') {
-      const lines = rawTextData.trim().split('\n');
-      rowsToImport = lines.map((line, idx) => {
-        const parts = line.split(/[,;\t]/).map(s => s.trim().replace(/^"|"$/g, ''));
-        return {
-          'اسم العميل': parts[0] || `عميل ${idx + 1}`,
-          'رقم الهاتف': parts[1] || '01000000000',
-          'البريد الإلكتروني': parts[2] || '',
-          'العنوان': parts[3] || 'القاهرة',
-          'المشروع': parts[4] || selectedProject,
-          'ملاحظات': parts[5] || 'استيراد سريع',
-        };
-      });
+      const lines = rawTextData.trim().split('\n').filter(l => l.trim());
+      const looksLikeTable = lines.length > 0 && lines.every(l => l.split(/[,;\t]/).length >= 3);
+      if (looksLikeTable) {
+        // "name, phone, email, address, project" per line
+        rowsToImport = lines.map((line, idx) => {
+          const parts = line.split(/[,;\t]/).map(s => s.trim().replace(/^"|"$/g, ''));
+          return {
+            'اسم العميل': parts[0] || `عميل ${idx + 1}`,
+            'رقم الهاتف': parts[1] || '',
+            'البريد الإلكتروني': parts[2] || '',
+            'العنوان': parts[3] || 'القاهرة',
+            'المشروع': parts[4] || selectedProject,
+            'ملاحظات': parts[5] || 'استيراد سريع',
+          };
+        });
+      } else {
+        // copied from WhatsApp / iPhone contacts / a column of numbers
+        rowsToImport = parseContacts(rawTextData).contacts.map(c => ({
+          'اسم العميل': c.name,
+          'رقم الهاتف': c.phone,
+          'البريد الإلكتروني': '',
+          'العنوان': 'القاهرة',
+          'المشروع': selectedProject,
+          'ملاحظات': 'تم النسخ من واتساب/جهات الاتصال',
+        }));
+      }
     } else {
       rowsToImport = parsedRows;
     }
@@ -236,14 +253,17 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
           const rawEmail = mapping.emailCol ? row[mapping.emailCol] : '';
           const rawAddress = mapping.addressCol ? row[mapping.addressCol] : 'القاهرة';
           const rawStatus = mapping.statusCol ? row[mapping.statusCol] : 'جديد';
-          const rawProject = mapping.projectNameCol ? row[mapping.projectNameCol] : selectedProject;
+          // "all projects": spread the imported rows evenly over every project
+          const spreadProject = projects.length > 0 ? projects[idx % projects.length].name : selectedProject;
+          let rawProject = mapping.projectNameCol ? row[mapping.projectNameCol] : selectedProject;
+          if (String(rawProject).trim() === ALL_PROJECTS) rawProject = spreadProject;
           const rawSource = mapping.sourceCol ? row[mapping.sourceCol] : 'داتا خاصة';
           const rawPriority = mapping.priorityCol ? row[mapping.priorityCol] : 'متوسط';
           const rawNotes = mapping.notesCol ? row[mapping.notesCol] : '';
           const rawFollowUp = mapping.followUpDateCol ? row[mapping.followUpDateCol] : undefined;
 
           const clientName = String(rawName || `عميل مستورد ${idx + 1}`).trim();
-          const clientPhone = formatPhoneNumber(rawPhone) || '01000000000';
+          const clientPhone = normalizePhone(formatPhoneNumber(rawPhone));
 
           return {
             name: clientName,
@@ -251,7 +271,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
             email: rawEmail ? String(rawEmail).trim() : '',
             address: rawAddress ? String(rawAddress).trim() : 'القاهرة',
             status: rawStatus ? String(rawStatus).trim() : 'جديد',
-            projectName: rawProject ? String(rawProject).trim() : selectedProject,
+            projectName: rawProject && String(rawProject).trim() !== ALL_PROJECTS ? String(rawProject).trim() : spreadProject,
             source: rawSource ? String(rawSource).trim() : 'داتا خاصة',
             priority: rawPriority ? String(rawPriority).trim() : 'متوسط',
             followUpDate: rawFollowUp ? String(rawFollowUp).trim() : undefined,
@@ -261,15 +281,17 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
           };
         });
 
-        // Add to global state
-        const result = importClientsFromCSV(formattedData);
+        // rows without a real phone number are skipped (never filled with a made-up number)
+        const validData = formattedData.filter(r => r.phone);
+        const noPhone = formattedData.length - validData.length;
+        const result = importClientsFromCSV(validData);
 
         setIsProcessing(false);
         setProgressPercent(100);
         setProcessedCount(total);
         setStatusMessage({
           success: true,
-          text: `🎉 تم استيراد وتخصيص ${total.toLocaleString('ar-EG')} عميل بنجاح مع الفرز الذكي التلقائي للأعمدة ونقلهم لشيت الموظف المستهدف!`,
+          text: `🎉 تم استيراد وتخصيص ${validData.length.toLocaleString('ar-EG')} عميل بنجاح${noPhone > 0 ? ` (تم تجاهل ${noPhone.toLocaleString('ar-EG')} صف من غير رقم تليفون صحيح)` : ''}. الأرقام الموجودة قبل كده في الـCRM بتتمنع تلقائي.`,
         });
 
         // Reset state
@@ -719,7 +741,7 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
                 }`}
               >
                 <FileCode className="w-3.5 h-3.5" />
-                <span>لصق أرقام مجمعة</span>
+                <span>لصق من واتساب</span>
               </button>
 
               <button
@@ -765,12 +787,18 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
                       onChange={e => setSelectedProject(e.target.value)}
                       className="w-full p-2 bg-[#2c2c2e] border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-[#4F9282]"
                     >
+                      {projects.length > 1 && <option value={ALL_PROJECTS}>🌐 توزيع على كل المشاريع (بالتساوي)</option>}
                       {projects.map(p => (
                         <option key={p.id} value={p.name}>
                           🏢 {p.name}
                         </option>
                       ))}
                     </select>
+                    {selectedProject === ALL_PROJECTS && (
+                      <p className="mt-1 text-[10px] text-slate-400">
+                        الداتا هتتقسم بالتساوي على المشاريع الـ{projects.length} ({projects.map(p => p.name).join('، ')}).
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -839,9 +867,12 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
             {/* TAB 3: PASTE RAW TEXT */}
             {activeTab === 'text' && (
               <div className="space-y-2">
-                <label className="block text-slate-400 text-xs">
-                  لصق أرقام وأسماء العملاء (كل سطر يحتوي على: الاسم, الهاتف, البريد, العنوان, المشروع):
+                <label className="block text-[#4F9282] text-xs font-bold">
+                  📋 انسخ من واتساب أو جهات الاتصال والصق هنا (جهات اتصال كتير مرة واحدة):
                 </label>
+                <p className="text-slate-400 text-[11px]">
+                  بيفهم الأسماء والأرقام تلقائي، سواء نسخت جهات الاتصال من واتساب أو من الآيفون أو عمود أرقام. ولو عايز تحدد البريد والعنوان والمشروع اكتب كل سطر: الاسم, الهاتف, البريد, العنوان, المشروع.
+                </p>
                 <textarea
                   rows={5}
                   placeholder={`أحمد عبد العزيز, 01012345678, ahmed@gmail.com, المعادي, Wada Bay رأس الحكمة\nمحمود كمال, 01198765432, mahmoud@yahoo.com, المنصورة, مول الهابي لاند الطبي Health Capital`}
@@ -849,6 +880,16 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({ isOpen, on
                   onChange={e => setRawTextData(e.target.value)}
                   className="w-full p-3 bg-[#1c1c1e] border border-slate-800 rounded text-slate-200 font-mono text-xs focus:outline-none focus:border-[#4F9282]"
                 />
+                {rawTextData.trim() && (() => {
+                  const r = parseContacts(rawTextData);
+                  return (
+                    <div className="text-[11px] text-[#A8CCC0] bg-[#2A6B5C]/15 border border-[#2A6B5C]/30 rounded p-2">
+                      تم التعرف على <strong>{r.contacts.length.toLocaleString('ar-EG')}</strong> جهة اتصال
+                      {r.duplicatesInPaste > 0 && <> - {r.duplicatesInPaste} رقم مكرر هيتشال</>}
+                      {r.contacts.length > 0 && <> - أولهم: {r.contacts[0].name} ({r.contacts[0].phone})</>}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

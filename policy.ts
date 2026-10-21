@@ -80,7 +80,8 @@ export function phoneKey(p: unknown): string {
   const digits = String(p ?? "")
     .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
     .replace(/\D/g, "");
-  return digits.length >= 7 ? digits.slice(-9) : "";
+  if (digits.length < 7 || /(\d)\1{6,}/.test(digits)) return ""; // too short / made-up (0100000000)
+  return digits.slice(-9);
 }
 
 export function vetPatch(key: string, current: any[], patch: ArrayPatch, actor: Actor, report?: any[]): ArrayPatch {

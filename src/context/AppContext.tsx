@@ -36,6 +36,7 @@ import {
   playNotificationChime,
 } from '../services/notificationService';
 import { autoDetectColumnMapping, formatPhoneNumber } from '../utils/smartExcelMapper';
+import { normalizePhone } from '../utils/contactParser';
 import { toLocalDateStr, toLocalDateTimeStr } from '../utils/dates';
 
 interface AppContextType {
@@ -1449,7 +1450,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         id: `lead-imported-${Date.now()}-${idx}`,
         name: String(rawName || `عميل مستورد ${idx + 1}`).trim(),
-        phone: formatPhoneNumber(rawPhone) || '01000000000',
+        phone: normalizePhone(formatPhoneNumber(rawPhone)),
         email: rawEmail ? String(rawEmail).trim() : '',
         address: rawAddress ? String(rawAddress).trim() : 'القاهرة',
         priority: (rawPriority || 'متوسط') as PriorityLevel,
@@ -1461,10 +1462,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assignedUserName: item.assignedUserName || currentUser.name,
         followUpDate: rawFollowUp ? String(rawFollowUp).trim() : undefined,
         createdAt: today,
+        addedAt: new Date().toISOString(),
         updatedAt: today,
         notes: rawNotes ? String(rawNotes).trim() : 'داتا مستوردة عبر أدمن النظام',
       };
-    });
+    }).filter(l => l.phone);
 
     setClients(prev => [...newLeads, ...prev]);
 
